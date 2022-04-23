@@ -56,7 +56,7 @@ jobs:
     - name: Build release binary
       run: cross build --release --target ${{ matrix.target }}
 
-    - name: Strip release binary (linux and macos)
+    - name: Build Archive
       if: matrix.build == 'linux' || matrix.build == 'macos'
       run: |
         outdir=kafcat-${{ matrix.target }}
@@ -64,16 +64,11 @@ jobs:
         mv target/${{ matrix.target }}/release/kafcat "$outdir"
         mv README.md LICENSE "$outdir"
         strip "$outdir/kafcat"
-
-    - name: Archive Release
-      uses: thedoctor0/zip-release@master
-      with:
-        type: 'zip'
-        filename: 'kafcat-${{ matrix.target }}.zip'
-        directory: kafcat-${{ matrix.target }}
+        tar czf "$outdir.tar.gz" "$outdir"
+        echo "ASSET=$outdir.tar.gz" >> $GITHUB_ENV
 
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          kafcat-${{ matrix.target }}.zip
+          ${{ env.ASSET }}
