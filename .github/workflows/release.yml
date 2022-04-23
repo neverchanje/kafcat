@@ -16,41 +16,10 @@
 name: release
 on:
   push:
-    # Enable when testing release infrastructure on a branch.
-    branches:
-    - release-test
     tags:
     - "[0-9]+.[0-9]+.[0-9]+"
 jobs:
   create-release:
-    name: create-release
-    runs-on: ubuntu-latest
-    # env:
-      # Set to force version number, e.g., when no tag exists.
-      # REL_VERSION: TEST-0.0.0
-    outputs:
-      upload_url: ${{ steps.release.outputs.upload_url }}
-      rel_version: ${{ env.REL_VERSION }}
-    steps:
-      - name: Get the release version from the tag
-        shell: bash
-        if: env.REL_VERSION == ''
-        run: |
-          # Apparently, this is the right way to get a tag name. Really?
-          #
-          # See: https://github.community/t5/GitHub-Actions/How-to-get-just-the-tag-name/m-p/32167/highlight/true#M1027
-          echo "REL_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          echo "version is: ${{ env.REL_VERSION }}"
-      - name: Create GitHub release
-        id: release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.REL_VERSION }}
-          release_name: ${{ env.REL_VERSION }}
-
-  build-release:
     name: build-release
     needs: ['create-release']
     runs-on: ${{ matrix.os }}
@@ -84,11 +53,6 @@ jobs:
       shell: bash
       run: |
         cargo install cross
-        echo "TARGET_DIR=./target/${{ matrix.target }}" >> $GITHUB_ENV
-
-    - name: Show command used for Cargo
-      run: |
-        echo "target dir is: ${{ env.TARGET_DIR }}"
 
     - name: Build release binary
       run: cross build --verbose --release --target ${{ matrix.target }}
