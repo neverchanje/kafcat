@@ -20,8 +20,7 @@ on:
     - "[0-9]+.[0-9]+.[0-9]+"
 jobs:
   create-release:
-    name: build-release
-    needs: ['create-release']
+    name: create-release
     runs-on: ${{ matrix.os }}
     env:
       # Emit backtraces on panics.
@@ -55,7 +54,7 @@ jobs:
         cargo install cross
 
     - name: Build release binary
-      run: cross build --verbose --release --target ${{ matrix.target }}
+      run: cross build --release --target ${{ matrix.target }}
 
     - name: Strip release binary (linux and macos)
       if: matrix.build == 'linux' || matrix.build == 'macos'
