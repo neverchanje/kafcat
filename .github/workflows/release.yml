@@ -97,25 +97,10 @@ jobs:
       if: matrix.build == 'linux' || matrix.build == 'macos'
       run: strip "target/${{ matrix.target }}/release/kafcat"
 
-    - name: Build archive
-      shell: bash
-      run: |
-        outdir="$(ci/cargo-out-dir "${{ env.TARGET_DIR }}")"
-        staging="kafcat-${{ needs.create-release.outputs.rel_version }}-${{ matrix.target }}"
-        mkdir -p "$staging"
-        cp {README.md,LICENSE} "$staging/"
-
-        # The man page is only generated on Unix systems. ¯\_(ツ)_/¯
-        cp "target/${{ matrix.target }}/release/kafcat" "$staging/"
-        tar czf "$staging.tar.gz" "$staging"
-        echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
-
-    - name: Upload release archive
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Release
+      uses: softprops/action-gh-release@v1
       with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ${{ env.ASSET }}
-        asset_name: ${{ env.ASSET }}
-        asset_content_type: application/octet-stream
+        files: |
+          target/${{ matrix.target }}/release/kafcat
+          README.md
+          LICENSE
