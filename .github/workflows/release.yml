@@ -69,6 +69,7 @@ jobs:
       uses: thedoctor0/zip-release@master
       with:
         type: 'zip'
+        filename: 'kafcat-${{ matrix.target }}.zip'
         directory: kafcat-${{ matrix.target }}
 
     - name: Release
