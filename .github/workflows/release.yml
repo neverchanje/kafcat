@@ -58,12 +58,21 @@ jobs:
 
     - name: Strip release binary (linux and macos)
       if: matrix.build == 'linux' || matrix.build == 'macos'
-      run: strip "target/${{ matrix.target }}/release/kafcat"
+      run: |
+        outdir=kafcat-${{ matrix.target }}
+        mkdir "$outdir"
+        mv target/${{ matrix.target }}/release/kafcat "$outdir"
+        mv README.md LICENSE "$outdir"
+        strip "$outdir/kafcat"
+
+    - name: Archive Release
+      uses: thedoctor0/zip-release@master
+      with:
+        type: 'zip'
+        directory: kafcat-${{ matrix.target }}
 
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          target/${{ matrix.target }}/release/kafcat
-          README.md
-          LICENSE
+          kafcat-${{ matrix.target }}.zip
